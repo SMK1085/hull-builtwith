@@ -269,12 +269,38 @@ export class SyncAgent {
     const connectorSettings = diContainer.resolve<PrivateSettings>(
       "hullAppSettings",
     );
+    const connectorId = this.diContainer.resolve<string>("hullAppId");
+    const redisClient = diContainer.resolve<ConnectorRedisClient>(
+      "redisClient",
+    );
 
+    const alreadyEnriched = await redisClient.get(
+      `${connectorId}_enrich_${
+        (envelope.serviceObject as builtwith_v17.Schema$DomainApiRequestParams)
+          .domain
+      }`,
+    );
+    if (alreadyEnriched !== undefined) {
+      await hullClient
+        .asAccount(envelope.message.account)
+        .logger.info("outgoing.account.skip", {
+          reason: "Account already enriched within the past 24 hours.",
+        });
+      return;
+    }
     const enrichResult = await serviceClient.enrichCompanyByDomain(
       envelope.serviceObject as builtwith_v17.Schema$DomainApiRequestParams,
     );
 
     if (enrichResult.success) {
+      await redisClient.set(
+        `${connectorId}_enrich_${
+          (envelope.serviceObject as builtwith_v17.Schema$DomainApiRequestParams)
+            .domain
+        }`,
+        envelope.serviceObject,
+        60 * 60 * 24,
+      );
       const enrichAttribs = mappingUtil.mapEnrichmentResultToHullAccountAttributes(
         enrichResult.data!,
       );
