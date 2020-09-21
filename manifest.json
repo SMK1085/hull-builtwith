@@ -1,0 +1,118 @@
+{
+  "name": "BuiltWith [BETA]",
+  "tags": [
+    "outgoing",
+    "oneColumn",
+    "batch",
+    "batch-accounts",
+    "smart-notifier"
+  ],
+  "description": "Hull Connector for BuiltWith",
+  "readme": "readme.md",
+  "tabs": [],
+  "version": "1.0.0",
+  "source": "builtwith",
+  "logo": "logo.png",
+  "picture": "picture.png",
+  "ui": false,
+  "settings": [],
+  "private_settings": [{
+      "name": "api_key",
+      "type": "string",
+      "title": "API Key",
+      "description": "The API Key to authenticate."
+    },
+    {
+      "name": "account_synchronized_segments",
+      "title": "Enrichment Filter",
+      "description": "Enrich Hull Accounts when they are part of one of these segments.",
+      "type": "array",
+      "format": "accountSegment",
+      "default": []
+    },
+    {
+      "name": "account_attributes_incoming",
+      "title": "Enrichment Mapping",
+      "description": "Define the enriched fields to store on the Hull Account profile.",
+      "type": "array",
+      "format": "accountTraitMapping",
+      "options": {
+        "direction": "incoming",
+        "showOverwriteToggle": true,
+        "placeholder": "Societeinfo Field",
+        "allowCreate": true,
+        "loadOptions": "/meta/fields/enrichcompany/incoming",
+        "source": "builtwith"
+      },
+      "default": [{
+          "hull": "name",
+          "overwrite": false,
+          "readOnly": true,
+          "service": "Results[0].Meta.CompanyName"
+        }, {
+          "hull": "builtwith/name",
+          "overwrite": true,
+          "readOnly": true,
+          "service": "Results[0].Meta.CompanyName"
+        }, {
+          "hull": "builtwith/lookup_in_db",
+          "overwrite": true,
+          "service": "Results[0].Result.IsDB"
+        },
+        {
+          "hull": "builtwith/spend",
+          "overwrite": true,
+          "service": "Results[0].Result.Spend"
+        },
+        {
+          "hull": "builtwith/sales_revenue",
+          "overwrite": true,
+          "service": "Results[0].Result.SalesRevenue"
+        },
+        {
+          "hull": "builtwith/technologies_all",
+          "overwrite": true,
+          "service": "$distinct(Results[0].Result.Paths.Technologies.Name)"
+        },
+        {
+          "hull": "builtwith/technologies_premium",
+          "overwrite": true,
+          "service": "$distinct(Results[0].Result.Paths.Technologies[IsPremium=\"yes\"].Name)"
+        },
+        {
+          "hull": "builtwith/vertical",
+          "overwrite": true,
+          "service": "Results[0].Meta.Vertical"
+        },
+        {
+          "hull": "builtwith/country_code",
+          "overwrite": true,
+          "service": "Results[0].Meta.Country"
+        }
+      ]
+    }
+  ],
+  "json": [],
+  "schedules": [{
+    "url": "/status",
+    "type": "interval",
+    "value": "30"
+  }],
+  "subscriptions": [{
+    "url": "/smart-notifier"
+  }],
+  "settings_sections": [{
+      "title": "Authentication",
+      "description": "Configure the parameters to authorize the BuiltWith API.",
+      "properties": ["private_settings.api_key"]
+    },
+    {
+      "title": "Enrichment",
+      "description": "Define which accounts are enriched.",
+      "properties": [
+        "private_settings.account_synchronized_segments",
+        "private_settings.account_attributes_incoming"
+      ]
+    }
+  ]
+}
