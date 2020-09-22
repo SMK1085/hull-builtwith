@@ -74,6 +74,13 @@ export class MappingUtil {
           }
         },
       );
+      set(attributes, `${ATTRIBUTE_GROUP}/error_details`, null);
+      set(attributes, `${ATTRIBUTE_GROUP}/success`, true);
+      set(
+        attributes,
+        `${ATTRIBUTE_GROUP}/last_enriched_at`,
+        DateTime.utc().toISO(),
+      );
     }
 
     return attributes;
